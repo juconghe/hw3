@@ -98,9 +98,10 @@ if __name__ == '__main__':
     word_count_dic, word_pair_count_dic = load_pickle()
     print 'calculating polarity'
     calculate_polarity(word_count_dic, word_pair_count_dic)
-    print '=======positive======= \n'
-    for p in sorted(polarity_dic.items(), key=lambda (w, c): -c)[:50]:
+    print '\n=======positive=======\n'
+    sorted_polarity = sorted(polarity_dic.items(), key=lambda (w, c): -c)
+    for p in sorted_polarity[:50]:
         print p[0]
-    print '=======negative======= \n'
-    for p in sorted(polarity_dic.items(), key=lambda (w, c): c)[:50]:
+    print '\n=======negative=======\n'
+    for p in sorted_polarity[-50:]:
         print p[0]
