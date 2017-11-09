@@ -4,6 +4,7 @@ import json
 import math
 import os
 import numpy as np
+from collections import defaultdict
 
 
 def load_word2vec(filename):
@@ -62,3 +63,12 @@ def cosine(d1, d2):
     size_2 = math.sqrt(np.sum(vect_2 ** 2))
     cos = dot_product / (size_1*size_2)
     return cos
+
+
+def construct_simliarity_dic(word_dic):
+    similarity_dic = defaultdict(dict)
+    for key1, value1 in word_dic.iteritems():
+        for key2, value2 in word_dic.iteritems():
+            if not key1 == key2:
+                similarity_dic[key1][key2] = cosine(value1, value2)
+    return similarity_dic

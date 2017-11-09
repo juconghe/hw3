@@ -32,10 +32,21 @@ def construct_dic(doc, word_count_dic, word_pair_count_dic):
         word_count_dic[token] += 1.0
         for p in pos_seed_list:
             if p in tokens:
-                word_pair_count_dic[(token, p)] += 1.0
+                word_pair_count_dic[(token, 'POS')] += 1.0
+                break
         for n in neg_seed_list:
             if n in tokens:
-                word_pair_count_dic[(token, n)] += 1.0
+                word_pair_count_dic[(token, 'NEG')] += 1.0
+                word_count_dic
+                break
+    for p in pos_seed_list:
+        if p in tokens:
+            word_count_dic['POS'] += 1
+            break
+    for n in neg_seed_list:
+        if n in tokens:
+            word_count_dic['NEG'] += 1
+            break
 
 
 def calculate_polarity(word_count_dic, word_pair_count_dic, filter=0):
@@ -46,26 +57,18 @@ def calculate_polarity(word_count_dic, word_pair_count_dic, filter=0):
             for t in tokens:
                 if word_count_dic[t] >= filter:
                     if not (t in pos_seed_list or t in neg_seed_list):
-                        p_xy_pos = 0.0
-                        p_y_pos = 0.0
-                        p_y_neg = 0.0
-                        p_xy_neg = 0.0
                         PMI_pos = 0.0
                         PMI_neg = 0.0
-                        for p in pos_seed_list:
-                            p_xy_pos += word_pair_count_dic[t, p]
-                            p_y_pos += word_count_dic[p]
+                        p_xy_pos = word_pair_count_dic[(t, 'POS')]
+                        p_y_pos = word_count_dic['POS']
+                        p_xy_neg = word_pair_count_dic[(t, 'NEG')]
+                        p_y_neg = word_count_dic['NEG']
                         if p_xy_pos != 0:
-                            PMI_pos = math.log10(p_xy_pos / TOTAL_TWEETS) - (math.log10(word_count_dic[t] / TOTAL_TWEETS) + math.log10(p_y_pos / TOTAL_TWEETS))
-                        else:
-                            PMI_pos = 0
-                        for n in neg_seed_list:
-                            p_xy_neg += word_pair_count_dic[t, n]
-                            p_y_neg += word_count_dic[n]
+                            PMI_pos = math.log10(p_xy_pos / TOTAL_TWEETS) - (math.log10(
+                                word_count_dic[t] / TOTAL_TWEETS) + math.log10(p_y_pos / TOTAL_TWEETS))
                         if p_xy_neg != 0:
-                            PMI_neg = math.log10(p_xy_neg / TOTAL_TWEETS) - (math.log10(word_count_dic[t] / TOTAL_TWEETS) + math.log10(p_y_neg / TOTAL_TWEETS))
-                        else:
-                            PMI_neg = 0
+                            PMI_neg = math.log10(p_xy_neg / TOTAL_TWEETS) - (math.log10(
+                                word_count_dic[t] / TOTAL_TWEETS) + math.log10(p_y_neg / TOTAL_TWEETS))
                         polarity_dic[t] = PMI_pos - PMI_neg
     return polarity_dic
 
