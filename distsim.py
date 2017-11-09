@@ -42,9 +42,23 @@ def stream_contexts(filename):
         yield word, ccdict
 
 
-def cosine(word_vect_1, word_vect_2):
-    dot_product = word_vect_1.dot(word_vect_2)
-    size_1 = math.sqrt(np.sum(word_vect_1 ** 2))
-    size_2 = math.sqrt(np.sum(word_vect_2 ** 2))
+def cosine(d1, d2):
+    key1 = set(d1.keys())
+    key2 = set(d2.keys())
+    vect_1 = np.array([])
+    vect_2 = np.array([])
+    key1.union(key2)
+    for k in key1:
+        if k in d1:
+            vect_1 = np.append(vect_1, d1[k])
+        else:
+            vect_1 = np.append(vect_1, 0.0)
+        if k in d2:
+            vect_2 = np.append(vect_2, d2[k])
+        else:
+            vect_2 = np.append(vect_2, 0.0)
+    dot_product = vect_1.dot(vect_2)
+    size_1 = math.sqrt(np.sum(vect_1 ** 2))
+    size_2 = math.sqrt(np.sum(vect_2 ** 2))
     cos = dot_product / (size_1*size_2)
     return cos
