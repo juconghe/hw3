@@ -26,6 +26,8 @@ def tokenize_doc(doc):
 
 def construct_dic(doc, word_count_dic, word_pair_count_dic):
     tokens = tokenize_doc(doc)
+    is_pos = False
+    is_neg = False
     # print tokens
     for token in tokens:
         # print token
@@ -33,20 +35,17 @@ def construct_dic(doc, word_count_dic, word_pair_count_dic):
         for p in pos_seed_list:
             if p in tokens:
                 word_pair_count_dic[(token, 'POS')] += 1.0
+                is_pos = True
                 break
         for n in neg_seed_list:
             if n in tokens:
                 word_pair_count_dic[(token, 'NEG')] += 1.0
-                word_count_dic
+                is_neg = True
                 break
-    for p in pos_seed_list:
-        if p in tokens:
-            word_count_dic['POS'] += 1
-            break
-    for n in neg_seed_list:
-        if n in tokens:
-            word_count_dic['NEG'] += 1
-            break
+    if is_pos:
+        word_count_dic['POS'] += 1.0
+    if is_neg:
+        word_count_dic['NEG'] += 1.0
 
 
 def calculate_polarity(word_count_dic, word_pair_count_dic, filter=0):
