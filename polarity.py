@@ -3,7 +3,6 @@ import math
 import numpy as np
 import pickle
 
-polarity_dic = defaultdict(float)
 pos_seed_list = ['good', 'nice', 'love',
                  'excellent', 'fortunate', 'correct', 'superior']
 neg_seed_list = ['bad', 'nasty', 'poor',
@@ -39,36 +38,38 @@ def construct_dic(doc, word_count_dic, word_pair_count_dic):
                 word_pair_count_dic[(token, n)] += 1.0
 
 
-def calculate_polarity(word_count_dic, word_pair_count_dic):
+def calculate_polarity(word_count_dic, word_pair_count_dic, filter=0):
+    polarity_dic = defaultdict(float)
     with open('tweets.txt', 'r') as doc:
         for d in doc:
             tokens = tokenize_doc(d)
             for t in tokens:
-                p_wy_pos = []
-                p_wy_neg = []
-                if t not in pos_seed_list:
-                    for p in pos_seed_list:
-                        if word_pair_count_dic[t, p] != 0:
-                            p_xy = math.log10(
-                                word_pair_count_dic[t, p] / TOTAL_TWEETS)
-                            p_x = math.log10(word_count_dic[t] / TOTAL_TWEETS)
-                            p_y = math.log10(word_count_dic[p] / TOTAL_TWEETS)
-                            PMI = p_xy - (p_x + p_y)
-                            p_wy_pos.append(PMI)
-                        else:
-                            p_wy_pos.append(0)
-                if t not in neg_seed_list:
-                    for n in neg_seed_list:
-                        if word_pair_count_dic[t, n] != 0:
-                            p_xy = math.log10(
-                                word_pair_count_dic[t, n] / TOTAL_TWEETS)
-                            p_x = math.log10(word_count_dic[t] / TOTAL_TWEETS)
-                            p_y = math.log10(word_count_dic[n] / TOTAL_TWEETS)
-                            PMI = p_xy - (p_x + p_y)
-                            p_wy_neg.append(PMI)
-                        else:
-                            p_wy_neg.append(0)
-                polarity_dic[t] = np.mean(p_wy_pos) - np.mean(p_wy_neg)
+                if word_count_dic[t] >= filter:
+                    p_wy_pos = []
+                    p_wy_neg = []
+                    if not (t in pos_seed_list or t in neg_seed_list):
+                        for p in pos_seed_list:
+                            if word_pair_count_dic[t, p] != 0:
+                                p_xy = math.log10(
+                                    word_pair_count_dic[t, p] / TOTAL_TWEETS)
+                                p_x = math.log10(word_count_dic[t] / TOTAL_TWEETS)
+                                p_y = math.log10(word_count_dic[p] / TOTAL_TWEETS)
+                                PMI = p_xy - (p_x + p_y)
+                                p_wy_pos.append(PMI)
+                            else:
+                                p_wy_pos.append(0)
+                        for n in neg_seed_list:
+                            if word_pair_count_dic[t, n] != 0:
+                                p_xy = math.log10(
+                                    word_pair_count_dic[t, n] / TOTAL_TWEETS)
+                                p_x = math.log10(word_count_dic[t] / TOTAL_TWEETS)
+                                p_y = math.log10(word_count_dic[n] / TOTAL_TWEETS)
+                                PMI = p_xy - (p_x + p_y)
+                                p_wy_neg.append(PMI)
+                            else:
+                                p_wy_neg.append(0)
+                        polarity_dic[t] = np.mean(p_wy_pos) - np.mean(p_wy_neg)
+    return polarity_dic
 
 
 def write_to_pickle(word_count_dic, word_pair_count_dic):
@@ -97,11 +98,11 @@ if __name__ == '__main__':
     #     write_to_pickle(word_count_dic, word_pair_count_dic)
     word_count_dic, word_pair_count_dic = load_pickle()
     print 'calculating polarity'
-    calculate_polarity(word_count_dic, word_pair_count_dic)
+    polarity_dic = calculate_polarity(word_count_dic, word_pair_count_dic, 500)
     print '\n=======positive=======\n'
     sorted_polarity = sorted(polarity_dic.items(), key=lambda (w, c): -c)
     for p in sorted_polarity[:50]:
-        print p[0]
+        print p[0], p[1]
     print '\n=======negative=======\n'
     for p in sorted_polarity[-50:]:
-        print p[0]
+        print p[0], p[1]
