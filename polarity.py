@@ -45,30 +45,28 @@ def calculate_polarity(word_count_dic, word_pair_count_dic, filter=0):
             tokens = tokenize_doc(d)
             for t in tokens:
                 if word_count_dic[t] >= filter:
-                    p_wy_pos = []
-                    p_wy_neg = []
                     if not (t in pos_seed_list or t in neg_seed_list):
+                        p_xy_pos = 0.0
+                        p_y_pos = 0.0
+                        p_y_neg = 0.0
+                        p_xy_neg = 0.0
+                        PMI_pos = 0.0
+                        PMI_neg = 0.0
                         for p in pos_seed_list:
-                            if word_pair_count_dic[t, p] != 0:
-                                p_xy = math.log10(
-                                    word_pair_count_dic[t, p] / TOTAL_TWEETS)
-                                p_x = math.log10(word_count_dic[t] / TOTAL_TWEETS)
-                                p_y = math.log10(word_count_dic[p] / TOTAL_TWEETS)
-                                PMI = p_xy - (p_x + p_y)
-                                p_wy_pos.append(PMI)
-                            else:
-                                p_wy_pos.append(0)
+                            p_xy_pos += word_pair_count_dic[t, p]
+                            p_y_pos += word_count_dic[p]
+                        if p_xy_pos != 0:
+                            PMI_pos = math.log10(p_xy_pos / TOTAL_TWEETS) - (math.log10(word_count_dic[t] / TOTAL_TWEETS) + math.log10(p_y_pos / TOTAL_TWEETS))
+                        else:
+                            PMI_pos = 0
                         for n in neg_seed_list:
-                            if word_pair_count_dic[t, n] != 0:
-                                p_xy = math.log10(
-                                    word_pair_count_dic[t, n] / TOTAL_TWEETS)
-                                p_x = math.log10(word_count_dic[t] / TOTAL_TWEETS)
-                                p_y = math.log10(word_count_dic[n] / TOTAL_TWEETS)
-                                PMI = p_xy - (p_x + p_y)
-                                p_wy_neg.append(PMI)
-                            else:
-                                p_wy_neg.append(0)
-                        polarity_dic[t] = np.mean(p_wy_pos) - np.mean(p_wy_neg)
+                            p_xy_neg += word_pair_count_dic[t, n]
+                            p_y_neg += word_count_dic[n]
+                        if p_xy_neg != 0:
+                            PMI_neg = math.log10(p_xy_neg / TOTAL_TWEETS) - (math.log10(word_count_dic[t] / TOTAL_TWEETS) + math.log10(p_y_neg / TOTAL_TWEETS))
+                        else:
+                            PMI_neg = 0
+                        polarity_dic[t] = PMI_pos - PMI_neg
     return polarity_dic
 
 
@@ -104,5 +102,5 @@ if __name__ == '__main__':
     for p in sorted_polarity[:50]:
         print p[0], p[1]
     print '\n=======negative=======\n'
-    for p in sorted_polarity[-50:]:
+    for p in reversed(sorted_polarity[-50:]):
         print p[0], p[1]
