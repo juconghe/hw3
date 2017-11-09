@@ -63,11 +63,11 @@ def calculate_polarity(word_count_dic, word_pair_count_dic, filter=0):
                         p_xy_neg = word_pair_count_dic[(t, 'NEG')]
                         p_y_neg = word_count_dic['NEG']
                         if p_xy_pos != 0:
-                            PMI_pos = math.log10(p_xy_pos / TOTAL_TWEETS) - (math.log10(
-                                word_count_dic[t] / TOTAL_TWEETS) + math.log10(p_y_pos / TOTAL_TWEETS))
+                            PMI_pos = math.log(p_xy_pos / TOTAL_TWEETS) - (math.log(
+                                word_count_dic[t] / TOTAL_TWEETS) + math.log(p_y_pos / TOTAL_TWEETS))
                         if p_xy_neg != 0:
-                            PMI_neg = math.log10(p_xy_neg / TOTAL_TWEETS) - (math.log10(
-                                word_count_dic[t] / TOTAL_TWEETS) + math.log10(p_y_neg / TOTAL_TWEETS))
+                            PMI_neg = math.log(p_xy_neg / TOTAL_TWEETS) - (math.log(
+                                word_count_dic[t] / TOTAL_TWEETS) + math.log(p_y_neg / TOTAL_TWEETS))
                         polarity_dic[t] = PMI_pos - PMI_neg
     return polarity_dic
 
