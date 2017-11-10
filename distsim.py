@@ -43,7 +43,7 @@ def stream_contexts(filename):
         yield word, ccdict
 
 
-def cosine(d1, d2):
+def dict_to_vect(d1, d2):
     key1 = set(d1.keys())
     key2 = set(d2.keys())
     vect_1 = np.array([])
@@ -58,17 +58,38 @@ def cosine(d1, d2):
             vect_2 = np.append(vect_2, d2[k])
         else:
             vect_2 = np.append(vect_2, 0.0)
+    return vect_1, vect_2
+
+
+def cosine(vect_1, vect_2):
     dot_product = vect_1.dot(vect_2)
     size_1 = math.sqrt(np.sum(vect_1 ** 2))
     size_2 = math.sqrt(np.sum(vect_2 ** 2))
-    cos = dot_product / (size_1*size_2)
+    cos = dot_product / (size_1 * size_2)
     return cos
 
 
-def construct_simliarity_dic(word_dic):
-    similarity_dic = defaultdict(dict)
-    for key1, value1 in word_dic.iteritems():
-        for key2, value2 in word_dic.iteritems():
-            if not key1 == key2:
-                similarity_dic[key1][key2] = cosine(value1, value2)
-    return similarity_dic
+def nearest_word(word_dic, word, nearest_n=20):
+    similarity_dic = defaultdict()
+    w = word_dic[word]
+    for key, value in word_dic.iteritems():
+        if not key == word:
+            vect_1, vect_2 = dict_to_vect(w, value)
+            similarity_dic[key] = cosine(vect_1, vect_2)
+    return sorted(similarity_dic.items(), key=lambda (w, c): -c)[:nearest_n]
+
+
+def nearest_word_dense_vect(vect_dict, word, nearest_n=20):
+    similarity_dic = defaultdict()
+    word_vect = vect_dict[word]
+    for key, vect in vect_dict.iteritems():
+        if not key == word:
+            similarity_dic[key] = cosine(word_vect, vect)
+    return sorted(similarity_dic.items(), key=lambda (w, c): -c)[:nearest_n]
+
+
+def nearest_word_given_vect(vect_dict, given_vect, nearest_n=20):
+    similarity_dic = defaultdict()
+    for key, vect in vect_dict.iteritems():
+        similarity_dic[key] = cosine(vect, given_vect)
+    return sorted(similarity_dic.items(), key=lambda (w, c): -c)[1:nearest_n + 1]
