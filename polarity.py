@@ -56,18 +56,14 @@ def calculate_polarity(word_count_dic, word_pair_count_dic, filter=0):
             for t in tokens:
                 if word_count_dic[t] >= filter:
                     if not (t in pos_seed_list or t in neg_seed_list):
-                        PMI_pos = 0.0
-                        PMI_neg = 0.0
                         p_xy_pos = word_pair_count_dic[(t, 'POS')]
                         p_y_pos = word_count_dic['POS']
                         p_xy_neg = word_pair_count_dic[(t, 'NEG')]
                         p_y_neg = word_count_dic['NEG']
-                        if p_xy_pos != 0:
-                            PMI_pos = math.log(p_xy_pos / TOTAL_TWEETS) - (math.log(
-                                word_count_dic[t] / TOTAL_TWEETS) + math.log(p_y_pos / TOTAL_TWEETS))
-                        if p_xy_neg != 0:
-                            PMI_neg = math.log(p_xy_neg / TOTAL_TWEETS) - (math.log(
-                                word_count_dic[t] / TOTAL_TWEETS) + math.log(p_y_neg / TOTAL_TWEETS))
+                        PMI_pos = math.log((p_xy_pos + 1) / (2 * TOTAL_TWEETS)) - (math.log(
+                            word_count_dic[t] / TOTAL_TWEETS) + math.log(p_y_pos / TOTAL_TWEETS))
+                        PMI_neg = math.log((p_xy_neg +1) / (2 * TOTAL_TWEETS)) - (math.log(
+                            word_count_dic[t] / TOTAL_TWEETS) + math.log(p_y_neg / TOTAL_TWEETS))
                         polarity_dic[t] = PMI_pos - PMI_neg
     return polarity_dic
 
@@ -98,7 +94,7 @@ if __name__ == '__main__':
     #     write_to_pickle(word_count_dic, word_pair_count_dic)
     word_count_dic, word_pair_count_dic = load_pickle()
     print 'calculating polarity'
-    polarity_dic = calculate_polarity(word_count_dic, word_pair_count_dic, 500)
+    polarity_dic = calculate_polarity(word_count_dic, word_pair_count_dic, 0)
     print '\n=======positive=======\n'
     sorted_polarity = sorted(polarity_dic.items(), key=lambda (w, c): -c)
     for p in sorted_polarity[:50]:
